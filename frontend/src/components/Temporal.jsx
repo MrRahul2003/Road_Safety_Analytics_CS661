@@ -41,6 +41,13 @@ export default function Temporal() {
     return Array.from({ length: 24 }, (_, h) => byH[h] || { key: String(h), total: 0, "Slight Injury": 0, "Serious Injury": 0, "Fatal injury": 0 });
   }, [filtered]);
 
+  // weekly volume + severity (stacked, in calendar order)
+  const byDay = useMemo(() => {
+    const g = groupSeverity(filtered, "Day_of_week");
+    const map = Object.fromEntries(g.map((x) => [x.key, x]));
+    return DAYS.map((d) => map[d] || { key: d, total: 0, "Slight Injury": 0, "Serious Injury": 0, "Fatal injury": 0 });
+  }, [filtered]);
+
   const W = 760, cellW = (W - 70) / 24, cellH = 30, gridH = cellH * 7;
 
   return (
@@ -92,24 +99,46 @@ export default function Temporal() {
         </div>
       </div>
 
-      <div className="card">
-        <div className="card-head">
-          <span className="card-title">Severity composition by hour</span>
-          <span className="card-sub">click a bar to filter that hour · {hourRange ? `showing ${hourRange[0]}:00–${hourRange[1]}:59` : "all hours"}</span>
+      <div className="grid" style={{ gridTemplateColumns: "1.5fr 1fr", minHeight: 0 }}>
+        <div className="card">
+          <div className="card-head">
+            <span className="card-title">Severity composition by hour</span>
+            <span className="card-sub">click a bar to filter · {hourRange ? `${hourRange[0]}:00–${hourRange[1]}:59` : "all hours"}</span>
+          </div>
+          <div className="fill">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={hourly} margin={{ left: 0, right: 10 }}>
+                <XAxis dataKey="key" {...axisProps} tickFormatter={(h) => `${String(h).padStart(2, "0")}`} />
+                <YAxis {...axisProps} />
+                <Tooltip {...tipProps} labelFormatter={(h) => `${String(h).padStart(2, "0")}:00`} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                {SEVERITY_ORDER.map((s) => (
+                  <Bar key={s} dataKey={s} stackId="a" fill={sevColor(s)}
+                       onClick={(d) => setHourRange([+d.key, +d.key])} cursor="pointer" />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-        <div className="fill">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={hourly} margin={{ left: 0, right: 10 }}>
-              <XAxis dataKey="key" {...axisProps} tickFormatter={(h) => `${String(h).padStart(2, "0")}`} />
-              <YAxis {...axisProps} />
-              <Tooltip {...tipProps} labelFormatter={(h) => `${String(h).padStart(2, "0")}:00`} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              {SEVERITY_ORDER.map((s) => (
-                <Bar key={s} dataKey={s} stackId="a" fill={sevColor(s)}
-                     onClick={(d) => setHourRange([+d.key, +d.key])} cursor="pointer" />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
+
+        <div className="card">
+          <div className="card-head">
+            <span className="card-title">Accidents by day of week</span>
+            <span className="card-sub">volume + severity · click to filter</span>
+          </div>
+          <div className="fill">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={byDay} margin={{ left: 0, right: 10 }}>
+                <XAxis dataKey="key" {...axisProps} tickFormatter={(d) => d.slice(0, 3)} />
+                <YAxis {...axisProps} />
+                <Tooltip {...tipProps} />
+                {SEVERITY_ORDER.map((s) => (
+                  <Bar key={s} dataKey={s} stackId="a" fill={sevColor(s)}
+                       onClick={(d) => setFieldValues("Day_of_week", [d.key])} cursor="pointer" />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
     </div>

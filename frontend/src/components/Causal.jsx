@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
 import { useStore, groupSeverity } from "../data/store.jsx";
 import { cividis, SEVERITY_ORDER } from "../theme.js";
 import { axisProps, tipProps } from "./Overview.jsx";
+import SeverityFactorBars from "./SeverityFactorBars.jsx";
 
 export default function Causal() {
   const { filtered, sevColor, toggleFilter, isActive } = useStore();
@@ -26,7 +27,7 @@ export default function Causal() {
 
   return (
     <div className="view" style={{ gridTemplateRows: "1fr 1fr" }}>
-      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", minHeight: 0 }}>
+      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr 1fr", minHeight: 0 }}>
         <div className="card">
           <div className="card-head">
             <span className="card-title">Top causes of accident</span>
@@ -68,6 +69,8 @@ export default function Causal() {
           </ResponsiveContainer>
           </div>
         </div>
+
+        <SeverityFactorBars field="Vehicle_movement" title="By vehicle movement" sub="severity % · click to filter" top={8} />
       </div>
 
       <div className="card">

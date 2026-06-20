@@ -7,7 +7,6 @@ import Temporal from "./components/Temporal.jsx";
 import Insights from "./components/Insights.jsx";
 import Causal from "./components/Causal.jsx";
 import Patterns from "./components/Patterns.jsx";
-import IndiaMap from "./components/IndiaMap.jsx";
 import Predictor from "./components/Predictor.jsx";
 
 const VIEWS = [
@@ -17,8 +16,7 @@ const VIEWS = [
   { id: "insights", label: "Insights", num: "03", el: Insights, crumb: "Who & under what conditions" },
   { id: "causal", label: "Causal", num: "04", el: Causal, crumb: "Why accidents turn severe" },
   { id: "patterns", label: "Patterns", num: "05", el: Patterns, crumb: "What relates to what" },
-  { id: "india", label: "India", num: "06", el: IndiaMap, crumb: "State-wise accidents (MoRTH)" },
-  { id: "predict", label: "Predictor", num: "07", el: Predictor, crumb: "Forecast severity" },
+  { id: "predict", label: "Predictor", num: "06", el: Predictor, crumb: "Forecast severity" },
 ];
 
 export default function App() {

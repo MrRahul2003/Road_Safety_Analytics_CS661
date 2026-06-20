@@ -163,7 +163,7 @@ function IndiaMini({ style }) {
         <span className="card-title">India · accidents by state</span>
         <span className="card-sub">{data.source} · full map in the India view</span>
       </div>
-      <div className="fill" style={{ display: "grid", gridTemplateColumns: "1fr 210px", gap: 14 }}>
+      <div className="fill" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 190px", gap: 14 }}>
         <div style={{ position: "relative", minHeight: 0 }}>
           <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
             {geo.features.map((feat) => {
@@ -196,7 +196,7 @@ function IndiaMini({ style }) {
             <span style={{ fontSize: 13, fontWeight: 600 }}>{head.title}</span>
             {selected && <span style={{ fontSize: 11, color: "#E69F00", cursor: "pointer" }} onClick={() => setSelected(null)}>✕ clear</span>}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <MiniStat label="Accidents" value={head.accidents.toLocaleString()} />
             <MiniStat label="Killed" value={head.killed.toLocaleString()} />
             <MiniStat label="Fatal / crash" value={`${(head.fatalRate * 100).toFixed(0)}%`} />
@@ -224,9 +224,10 @@ function IndiaMini({ style }) {
 
 function MiniStat({ label, value }) {
   return (
-    <div style={{ background: "#0F151D", borderRadius: 8, padding: "9px 10px", border: "1px solid #1F2935" }}>
-      <div style={{ fontSize: 9.5, color: "#8B98A8", textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</div>
-      <div style={{ fontFamily: "JetBrains Mono", fontSize: 16, fontWeight: 700, marginTop: 2 }}>{value}</div>
+    <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8,
+                  background: "#0F151D", borderRadius: 8, padding: "8px 11px", border: "1px solid #1F2935" }}>
+      <span style={{ fontSize: 10, color: "#8B98A8", textTransform: "uppercase", letterSpacing: "0.04em", whiteSpace: "nowrap" }}>{label}</span>
+      <span style={{ fontFamily: "JetBrains Mono", fontSize: 16, fontWeight: 700, whiteSpace: "nowrap" }}>{value}</span>
     </div>
   );
 }

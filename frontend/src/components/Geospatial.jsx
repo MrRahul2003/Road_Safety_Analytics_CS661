@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useStore, groupSeverity } from "../data/store.jsx";
 import { cividis } from "../theme.js";
+import SeverityFactorBars from "./SeverityFactorBars.jsx";
 
 // Lightweight deterministic circle-packing relaxation (no extra deps).
 function packLayout(nodes, W, H, iters = 220) {
@@ -65,8 +66,8 @@ export default function Geospatial() {
         </span>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: "1.5fr 1fr", minHeight: 0 }}>
-        <div className="card">
+      <div className="grid" style={{ gridTemplateColumns: "1.5fr 1fr 1fr", gridTemplateRows: "1fr 1fr", minHeight: 0 }}>
+        <div className="card" style={{ gridColumn: 1, gridRow: "1 / 3" }}>
           <div className="card-head">
             <span className="card-title">Crash-density map by area</span>
             <span className="card-sub">click a bubble to drill in</span>
@@ -120,7 +121,7 @@ export default function Geospatial() {
           <CividisLegend max={maxRisk} />
         </div>
 
-        <div className="card">
+        <div className="card" style={{ gridColumn: 2, gridRow: 1 }}>
           <div className="card-head">
             <span className="card-title">Area risk ranking</span>
             <span className="card-sub">highest-risk first</span>
@@ -142,6 +143,13 @@ export default function Geospatial() {
           </table>
           </div>
         </div>
+
+        <SeverityFactorBars field="Road_surface_type" title="By road surface" sub="severity %" top={6}
+                            style={{ gridColumn: 3, gridRow: 1 }} />
+        <SeverityFactorBars field="Lanes_or_Medians" title="By lanes / medians" sub="severity %" top={6}
+                            style={{ gridColumn: 2, gridRow: 2 }} />
+        <SeverityFactorBars field="Type_of_vehicle" title="By vehicle type" sub="severity %" top={6}
+                            style={{ gridColumn: 3, gridRow: 2 }} />
       </div>
     </div>
   );
