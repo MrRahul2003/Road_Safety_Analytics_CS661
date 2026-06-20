@@ -44,7 +44,7 @@ export default function Temporal() {
   const W = 760, cellW = (W - 70) / 24, cellH = 30, gridH = cellH * 7;
 
   return (
-    <>
+    <div className="view" style={{ gridTemplateRows: "1.1fr 1fr" }}>
       <div className="card">
         <div className="card-head">
           <span className="card-title">Accident intensity · day × hour</span>
@@ -53,8 +53,8 @@ export default function Temporal() {
             <button className={"btn ghost"} style={btn(metric === "risk")} onClick={() => setMetric("risk")}>Injury risk</button>
           </div>
         </div>
-        <div style={{ position: "relative", overflowX: "auto" }}>
-          <svg viewBox={`0 0 ${W} ${gridH + 36}`} width="100%" style={{ minWidth: 620 }}>
+        <div className="fill" style={{ position: "relative" }}>
+          <svg viewBox={`0 0 ${W} ${gridH + 36}`} width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
             {DAYS.map((d, di) => (
               <text key={d} x={62} y={di * cellH + cellH / 2 + 18} textAnchor="end" fontSize="11" fill="#8B98A8"
                     style={{ cursor: "pointer" }} onClick={() => toggleFilter("Day_of_week", d)}
@@ -82,7 +82,7 @@ export default function Temporal() {
             </div>
           )}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, fontSize: 11, color: "#8B98A8" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8, fontSize: 11, color: "#8B98A8", flex: "none" }}>
           <span>{metric === "volume" ? "fewer" : "lower risk"}</span>
           <div style={{ display: "flex", flex: 1, height: 9, borderRadius: 5, overflow: "hidden" }}>
             {Array.from({ length: 24 }, (_, i) => <div key={i} style={{ flex: 1, background: color((i / 23) * maxVal) }} />)}
@@ -92,25 +92,27 @@ export default function Temporal() {
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: 16 }}>
+      <div className="card">
         <div className="card-head">
           <span className="card-title">Severity composition by hour</span>
           <span className="card-sub">click a bar to filter that hour · {hourRange ? `showing ${hourRange[0]}:00–${hourRange[1]}:59` : "all hours"}</span>
         </div>
-        <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={hourly} margin={{ left: 0, right: 10 }}>
-            <XAxis dataKey="key" {...axisProps} tickFormatter={(h) => `${String(h).padStart(2, "0")}`} />
-            <YAxis {...axisProps} />
-            <Tooltip {...tipProps} labelFormatter={(h) => `${String(h).padStart(2, "0")}:00`} />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
-            {SEVERITY_ORDER.map((s) => (
-              <Bar key={s} dataKey={s} stackId="a" fill={sevColor(s)}
-                   onClick={(d) => setHourRange([+d.key, +d.key])} cursor="pointer" />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="fill">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={hourly} margin={{ left: 0, right: 10 }}>
+              <XAxis dataKey="key" {...axisProps} tickFormatter={(h) => `${String(h).padStart(2, "0")}`} />
+              <YAxis {...axisProps} />
+              <Tooltip {...tipProps} labelFormatter={(h) => `${String(h).padStart(2, "0")}:00`} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              {SEVERITY_ORDER.map((s) => (
+                <Bar key={s} dataKey={s} stackId="a" fill={sevColor(s)}
+                     onClick={(d) => setHourRange([+d.key, +d.key])} cursor="pointer" />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
-    </>
+    </div>
   );
 }
 

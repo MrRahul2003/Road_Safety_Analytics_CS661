@@ -64,9 +64,9 @@ export default function IndiaMap() {
     : { title: "All India", ...national };
 
   return (
-    <>
-      <div className="card" style={{ marginBottom: 16, borderColor: "#2C3A4A", background: "#0F151D" }}>
-        <span style={{ fontSize: 12.5, color: "#8B98A8" }}>
+    <div className="view" style={{ gridTemplateRows: "auto 1fr" }}>
+      <div className="card flat" style={{ borderColor: "#2C3A4A", background: "#0F151D" }}>
+        <span style={{ fontSize: 12, color: "#8B98A8" }}>
           <b style={{ color: "#E6EDF3" }}>Separate dataset · </b>
           India state-wise road accidents from <b style={{ color: "#E6EDF3" }}>{data.source}</b>. This is independent
           of the Addis Ababa records used in the other views. <b style={{ color: "#E6EDF3" }}>Click a state</b> to drive the
@@ -74,7 +74,7 @@ export default function IndiaMap() {
         </span>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: "1.4fr 1fr" }}>
+      <div className="grid" style={{ gridTemplateColumns: "1.4fr 1fr", minHeight: 0 }}>
         <div className="card">
           <div className="card-head">
             <span className="card-title">Accidents by state · {data.year}</span>
@@ -84,8 +84,8 @@ export default function IndiaMap() {
               ))}
             </div>
           </div>
-          <div style={{ position: "relative" }}>
-            <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: "block" }}>
+          <div className="fill" style={{ position: "relative" }}>
+            <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
               {geo.features.map((f) => {
                 const name = f.properties.st_nm;
                 const s = states[name];
@@ -115,11 +115,11 @@ export default function IndiaMap() {
               </div>
             )}
           </div>
-          <CividisBar max={maxVal} fmt={M.fmt} label={M.label} />
+          <div style={{ flex: "none" }}><CividisBar max={maxVal} fmt={M.fmt} label={M.label} /></div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div className="card">
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, minHeight: 0 }}>
+          <div className="card" style={{ flex: "none" }}>
             <div className="card-head">
               <span className="card-title">{headStats.title}</span>
               {selected
@@ -146,7 +146,8 @@ export default function IndiaMap() {
               <span className="card-title">State ranking</span>
               <span className="card-sub">top 12 by {M.short.toLowerCase()} · click to select</span>
             </div>
-            <ResponsiveContainer width="100%" height={330}>
+            <div className="fill">
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart data={ranking.slice(0, 12)} layout="vertical" margin={{ left: 6, right: 34 }} barCategoryGap={4}>
                 <XAxis type="number" {...axisProps} tickFormatter={(v) => metric === "fatalRate" ? `${Math.round(v * 100)}%` : (v >= 1000 ? `${Math.round(v / 1000)}k` : v)} />
                 <YAxis type="category" dataKey="name" width={120} {...axisProps} tick={{ fontSize: 10.5, fill: "#8B98A8" }} />
@@ -160,10 +161,11 @@ export default function IndiaMap() {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+            </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

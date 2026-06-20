@@ -29,19 +29,21 @@ function FactorPanel({ field, title, sub, sortByRisk = true, normalize = true })
         <span className="card-title">{title}</span>
         <span className="card-sub">{sub}</span>
       </div>
-      <ResponsiveContainer width="100%" height={h}>
-        <BarChart data={data} layout="vertical" margin={{ left: 6, right: 38 }} barCategoryGap={6}>
-          <XAxis type="number" domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} allowDataOverflow tickFormatter={(v) => `${Math.round(v)}%`} stroke="#2C3A4A" tick={{ fontSize: 10, fill: "#5A6675" }} tickLine={false} />
-          <YAxis type="category" dataKey="key" width={140} stroke="#2C3A4A" tick={{ fontSize: 11, fill: "#8B98A8" }} tickLine={false} />
-          <Tooltip {...tipProps} formatter={(v, n) => [`${v.toFixed(1)}%`, n.replace("_", "")]} />
-          {SEVERITY_ORDER.map((s) => (
-            <Bar key={s} dataKey={keyMap[s]} name={s} stackId="a" fill={sevColor(s)}
-                 onClick={(d) => toggleFilter(field, d.key)} cursor="pointer"
-                 label={s === "Fatal injury" ? { position: "right", fontSize: 10, fill: "#D55E00",
-                          formatter: (v) => v > 0 ? `${v.toFixed(0)}%☠` : "" } : false} />
-          ))}
-        </BarChart>
-      </ResponsiveContainer>
+      <div className="fill">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} layout="vertical" margin={{ left: 6, right: 38 }} barCategoryGap={4}>
+            <XAxis type="number" domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} allowDataOverflow tickFormatter={(v) => `${Math.round(v)}%`} stroke="#2C3A4A" tick={{ fontSize: 10, fill: "#5A6675" }} tickLine={false} />
+            <YAxis type="category" dataKey="key" width={120} stroke="#2C3A4A" tick={{ fontSize: 10.5, fill: "#8B98A8" }} tickLine={false} />
+            <Tooltip {...tipProps} formatter={(v, n) => [`${v.toFixed(1)}%`, n.replace("_", "")]} />
+            {SEVERITY_ORDER.map((s) => (
+              <Bar key={s} dataKey={keyMap[s]} name={s} stackId="a" fill={sevColor(s)}
+                   onClick={(d) => toggleFilter(field, d.key)} cursor="pointer"
+                   label={s === "Fatal injury" ? { position: "right", fontSize: 10, fill: "#D55E00",
+                            formatter: (v) => v > 0 ? `${v.toFixed(0)}%☠` : "" } : false} />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
@@ -49,28 +51,23 @@ function FactorPanel({ field, title, sub, sortByRisk = true, normalize = true })
 export default function Insights() {
   const { sevColor } = useStore();
   return (
-    <>
-      <div className="legend" style={{ marginBottom: 14 }}>
-        <span style={{ fontSize: 12, color: "#8B98A8" }}>Each bar = severity composition (% of accidents). Sorted by injury risk. ☠ marks fatal share. Click any segment to cross-filter.</span>
+    <div className="view" style={{ gridTemplateRows: "auto 1fr" }}>
+      <div className="legend" style={{ flex: "none" }}>
+        <span style={{ fontSize: 12, color: "#8B98A8" }}>Severity composition (% of accidents) by driver & environment factors, sorted by injury risk. ☠ marks fatal share. Click any segment to cross-filter.</span>
         <span className="spacer" style={{ flex: 1 }} />
         {SEVERITY_ORDER.map((s) => (
           <span key={s} className="legend-item"><span className="legend-dot" style={{ background: sevColor(s) }} /> {s}</span>
         ))}
       </div>
 
-      <h3 style={{ font: "600 13px var(--display)", color: "#8B98A8", margin: "4px 0 12px", letterSpacing: "0.04em", textTransform: "uppercase" }}>Driver profile</h3>
-      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
+      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr 1fr", gridTemplateRows: "1fr 1fr", minHeight: 0 }}>
         <FactorPanel field="Age_band_of_driver" title="Driver age band" sub="by risk" />
         <FactorPanel field="Driving_experience" title="Driving experience" sub="by risk" />
-      </div>
-
-      <h3 style={{ font: "600 13px var(--display)", color: "#8B98A8", margin: "20px 0 12px", letterSpacing: "0.04em", textTransform: "uppercase" }}>Environmental conditions</h3>
-      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
         <FactorPanel field="Weather_conditions" title="Weather" sub="by risk" />
         <FactorPanel field="Light_conditions" title="Light conditions" sub="by risk" />
         <FactorPanel field="Road_surface_conditions" title="Road surface" sub="by risk" />
         <FactorPanel field="Sex_of_driver" title="Driver sex" sub="by risk" />
       </div>
-    </>
+    </div>
   );
 }

@@ -61,8 +61,8 @@ export default function Predictor() {
   const m = model.metrics;
 
   return (
-    <div className="grid" style={{ gridTemplateColumns: "1.4fr 1fr" }}>
-      <div className="card">
+    <div className="view" style={{ gridTemplateColumns: "1.4fr 1fr", gridTemplateRows: "1fr" }}>
+      <div className="card" style={{ overflow: "hidden" }}>
         <div className="card-head">
           <span className="card-title">Severity predictor · scenario input</span>
           <span className="card-sub">multinomial logistic regression · updates live</span>
@@ -105,8 +105,8 @@ export default function Predictor() {
         </div>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div className="card">
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, minHeight: 0, overflow: "hidden" }}>
+        <div className="card" style={{ flex: "none" }}>
           <div className="card-head"><span className="card-title">Model performance</span><span className="card-sub">held-out 20% test</span></div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
             <Metric label="Accuracy" value={(m.accuracy * 100).toFixed(1) + "%"} />

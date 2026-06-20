@@ -55,9 +55,9 @@ export default function Geospatial() {
   const ranked = [...areas].sort((a, b) => b.risk - a.risk);
 
   return (
-    <>
-      <div className="card" style={{ marginBottom: 16, borderColor: "#2C3A4A", background: "#0F151D" }}>
-        <span style={{ fontSize: 12.5, color: "#8B98A8" }}>
+    <div className="view" style={{ gridTemplateRows: "auto 1fr" }}>
+      <div className="card flat" style={{ borderColor: "#2C3A4A", background: "#0F151D" }}>
+        <span style={{ fontSize: 12, color: "#8B98A8" }}>
           <b style={{ color: "#E6EDF3" }}>Spatial dimension · </b>
           The RTA dataset records <i>where</i> accidents occur as area categories, not GPS coordinates.
           Each bubble is an accident area — <b style={{ color: "#E6EDF3" }}>size</b> = volume,
@@ -65,14 +65,14 @@ export default function Geospatial() {
         </span>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: "1.5fr 1fr" }}>
+      <div className="grid" style={{ gridTemplateColumns: "1.5fr 1fr", minHeight: 0 }}>
         <div className="card">
           <div className="card-head">
             <span className="card-title">Crash-density map by area</span>
             <span className="card-sub">click a bubble to drill in</span>
           </div>
-          <div style={{ position: "relative" }}>
-            <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: "block" }}>
+          <div className="fill" style={{ position: "relative" }}>
+            <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
               <defs>
                 <radialGradient id="bg" cx="50%" cy="45%" r="70%">
                   <stop offset="0%" stopColor="#13202C" />
@@ -125,6 +125,7 @@ export default function Geospatial() {
             <span className="card-title">Area risk ranking</span>
             <span className="card-sub">highest-risk first</span>
           </div>
+          <div className="fill" style={{ overflow: "hidden" }}>
           <table className="tbl">
             <thead><tr><th>Area</th><th className="num">N</th><th className="num">Fatal%</th><th className="num">Risk</th></tr></thead>
             <tbody>
@@ -139,9 +140,10 @@ export default function Geospatial() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

@@ -113,30 +113,28 @@ export default function Patterns() {
       .sort((a, b) => a.cas - b.cas), [filtered]);
 
   return (
-    <>
-      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
+    <div className="view" style={{ gridTemplateRows: "1fr 1fr" }}>
+      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", minHeight: 0 }}>
         {/* 1 — Association ranking */}
         <div className="card">
           <div className="card-head">
             <span className="card-title">What drives severity · factor association</span>
             <span className="card-sub">Cramér's V vs severity · higher = stronger link</span>
           </div>
-          <ResponsiveContainer width="100%" height={Math.max(220, assoc.length * 26 + 24)}>
-            <BarChart data={assoc} layout="vertical" margin={{ left: 6, right: 40 }} barCategoryGap={5}>
-              <XAxis type="number" domain={[0, Math.ceil(maxV * 20) / 20]} {...axisProps}
-                     tickFormatter={(v) => v.toFixed(2)} />
-              <YAxis type="category" dataKey="label" width={120} {...axisProps}
-                     tick={{ fontSize: 11, fill: "#8B98A8" }} />
-              <Tooltip {...tipProps} formatter={(v) => [v.toFixed(3), "Cramér's V"]} />
-              <Bar dataKey="v" radius={[0, 3, 3, 0]}
-                   label={{ position: "right", fontSize: 10, fill: "#8B98A8", formatter: (v) => v.toFixed(2) }}>
-                {assoc.map((a) => <Cell key={a.field} fill={assocColor(a.v)} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-          <div style={{ fontSize: 11, color: "#5A6675", marginTop: 4 }}>
-            Ranks every factor by how strongly it co-varies with how severe a crash is — the
-            top bars are where prevention effort pays off most.
+          <div className="fill">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={assoc} layout="vertical" margin={{ left: 6, right: 40 }} barCategoryGap={2}>
+                <XAxis type="number" domain={[0, Math.ceil(maxV * 20) / 20]} {...axisProps}
+                       tickFormatter={(v) => v.toFixed(2)} />
+                <YAxis type="category" dataKey="label" width={110} {...axisProps}
+                       tick={{ fontSize: 10, fill: "#8B98A8" }} />
+                <Tooltip {...tipProps} formatter={(v) => [v.toFixed(3), "Cramér's V"]} />
+                <Bar dataKey="v" radius={[0, 3, 3, 0]}
+                     label={{ position: "right", fontSize: 9.5, fill: "#8B98A8", formatter: (v) => v.toFixed(2) }}>
+                  {assoc.map((a) => <Cell key={a.field} fill={assocColor(a.v)} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
@@ -146,66 +144,65 @@ export default function Patterns() {
             <span className="card-title">Risk fingerprint · danger conditions</span>
             <span className="card-sub">% serious-or-fatal · orange vs grey baseline</span>
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <RadarChart data={radar} outerRadius="72%">
-              <PolarGrid stroke="#2C3A4A" />
-              <PolarAngleAxis dataKey="axis" tick={{ fontSize: 11, fill: "#8B98A8" }} />
-              <PolarRadiusAxis angle={90} domain={[0, radarMax]} tick={{ fontSize: 9, fill: "#5A6675" }} />
-              <Radar name="Baseline (all)" dataKey="baseline" stroke="#5A6675" fill="#5A6675" fillOpacity={0.12} />
-              <Radar name="Under condition" dataKey="value" stroke="#D55E00" fill="#D55E00" fillOpacity={0.38} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Tooltip {...tipProps} formatter={(v, n) => [`${v}%`, n]} />
-            </RadarChart>
-          </ResponsiveContainer>
-          <div style={{ fontSize: 11, color: "#5A6675", marginTop: 4 }}>
-            Each spoke is the serious-or-fatal rate among crashes meeting that condition; where the
-            orange shape bulges past the grey ring, that condition makes crashes worse.
+          <div className="fill">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={radar} outerRadius="70%">
+                <PolarGrid stroke="#2C3A4A" />
+                <PolarAngleAxis dataKey="axis" tick={{ fontSize: 10.5, fill: "#8B98A8" }} />
+                <PolarRadiusAxis angle={90} domain={[0, radarMax]} tick={{ fontSize: 9, fill: "#5A6675" }} />
+                <Radar name="Baseline (all)" dataKey="baseline" stroke="#5A6675" fill="#5A6675" fillOpacity={0.12} />
+                <Radar name="Under condition" dataKey="value" stroke="#D55E00" fill="#D55E00" fillOpacity={0.38} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Tooltip {...tipProps} formatter={(v, n) => [`${v}%`, n]} />
+              </RadarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* 2 — Treemap */}
-      <div className="card" style={{ marginTop: 16 }}>
-        <div className="card-head">
-          <span className="card-title">Cause landscape · volume × lethality</span>
-          <span className="card-sub">area = number of crashes · colour = fatal rate (cividis) · click to filter</span>
+      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", minHeight: 0 }}>
+        {/* 2 — Treemap */}
+        <div className="card">
+          <div className="card-head">
+            <span className="card-title">Cause landscape · volume × lethality</span>
+            <span className="card-sub">area = crashes · colour = fatal rate · click to filter</span>
+          </div>
+          <div className="fill">
+            <ResponsiveContainer width="100%" height="100%">
+              <Treemap data={tree} dataKey="size" stroke="#0A0E14" isAnimationActive={false}
+                       content={<TreeCell lookup={treeLookup} color={treeColor} maxFatal={maxFatal}
+                                          onPick={(name) => toggleFilter("Cause_of_accident", name)}
+                                          isActive={(name) => isActive("Cause_of_accident", name)} />}>
+                <Tooltip {...tipProps} content={<TreeTip lookup={treeLookup} />} />
+              </Treemap>
+            </ResponsiveContainer>
+          </div>
+          <div style={{ flex: "none" }}><CividisBar max={maxFatal} left="lower fatal rate" right="higher fatal rate" pct /></div>
         </div>
-        <ResponsiveContainer width="100%" height={300}>
-          <Treemap data={tree} dataKey="size" stroke="#0A0E14" isAnimationActive={false}
-                   content={<TreeCell lookup={treeLookup} color={treeColor} maxFatal={maxFatal}
-                                      onPick={(name) => toggleFilter("Cause_of_accident", name)}
-                                      isActive={(name) => isActive("Cause_of_accident", name)} />}>
-            <Tooltip {...tipProps} content={<TreeTip lookup={treeLookup} />} />
-          </Treemap>
-        </ResponsiveContainer>
-        <CividisBar max={maxFatal} left="lower fatal rate" right="higher fatal rate" pct />
-      </div>
 
-      {/* 4 — Casualty histogram */}
-      <div className="card" style={{ marginTop: 16 }}>
-        <div className="card-head">
-          <span className="card-title">Severity by casualties per crash</span>
-          <span className="card-sub">distribution · click a bar to filter that casualty count</span>
-        </div>
-        <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={casualties} margin={{ left: 0, right: 10 }}>
-            <XAxis dataKey="cas" {...axisProps}
-                   label={{ value: "casualties in the crash", position: "insideBottom", offset: -2, fontSize: 11, fill: "#5A6675" }} />
-            <YAxis {...axisProps} />
-            <Tooltip {...tipProps} labelFormatter={(v) => `${v} casualties`} />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
-            {SEVERITY_ORDER.map((s) => (
-              <Bar key={s} dataKey={s} stackId="a" fill={sevColor(s)}
-                   onClick={(d) => toggleFilter("Number_of_casualties", d.key)} cursor="pointer" />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
-        <div style={{ fontSize: 11, color: "#5A6675", marginTop: 4 }}>
-          Watch the fatal/serious share grow as the number of casualties per crash rises — multi-casualty
-          crashes are disproportionately the deadly ones.
+        {/* 4 — Casualty histogram */}
+        <div className="card">
+          <div className="card-head">
+            <span className="card-title">Severity by casualties per crash</span>
+            <span className="card-sub">distribution · click a bar to filter</span>
+          </div>
+          <div className="fill">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={casualties} margin={{ left: 0, right: 10 }}>
+                <XAxis dataKey="cas" {...axisProps} />
+                <YAxis {...axisProps} />
+                <Tooltip {...tipProps} labelFormatter={(v) => `${v} casualties`} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                {SEVERITY_ORDER.map((s) => (
+                  <Bar key={s} dataKey={s} stackId="a" fill={sevColor(s)}
+                       onClick={(d) => toggleFilter("Number_of_casualties", d.key)} cursor="pointer" />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

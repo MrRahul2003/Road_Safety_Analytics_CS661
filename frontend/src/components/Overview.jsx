@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { geoMercator, geoPath } from "d3-geo";
 import { useStore, severityBreakdown, groupSeverity } from "../data/store.jsx";
 import { SEVERITY_ORDER, cividis } from "../theme.js";
 
@@ -42,8 +43,8 @@ export default function Overview() {
   }, [filtered]);
 
   return (
-    <>
-      <div className="kpi-row">
+    <div className="view" style={{ gridTemplateColumns: "1.9fr 1fr", gridTemplateRows: "auto 1fr 1fr 1fr" }}>
+      <div className="kpi-row" style={{ gridColumn: "1 / -1", marginBottom: 0 }}>
         <Kpi label="Total accidents" value={filtered.length.toLocaleString()} foot="in current selection" />
         <Kpi label="Fatal share" value={fatalPct} unit="%" foot={`${sev["Fatal injury"].toLocaleString()} fatal injuries`} />
         <Kpi label="Serious share" value={seriousPct} unit="%" foot={`${sev["Serious Injury"].toLocaleString()} serious injuries`} />
@@ -51,41 +52,42 @@ export default function Overview() {
         <Kpi label="Peak hour" value={peakHour} foot={`${weekendPct}% on weekends`} />
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: "minmax(280px, 1fr) 1.6fr" }}>
-        <div className="card">
-          <div className="card-head"><span className="card-title">Severity distribution</span></div>
-          <ResponsiveContainer width="100%" height={250}>
+      <div className="card" style={{ gridColumn: 2, gridRow: 2 }}>
+        <div className="card-head"><span className="card-title">Severity distribution</span></div>
+        <div className="fill">
+          <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie data={donut} dataKey="value" nameKey="name" innerRadius={62} outerRadius={92} paddingAngle={2}
+              <Pie data={donut} dataKey="value" nameKey="name" innerRadius="48%" outerRadius="78%" paddingAngle={2}
                    onClick={(d) => toggleFilter("Accident_severity", d.name)} stroke="#0A0E14" strokeWidth={2}>
                 {donut.map((d) => (
-                  <Cell key={d.name} fill={sevColor(d.name)} cursor="pointer"
-                        opacity={isActive("Accident_severity", d.name) || true ? 1 : 0.4} />
+                  <Cell key={d.name} fill={sevColor(d.name)} cursor="pointer" />
                 ))}
               </Pie>
               <Tooltip {...tipProps} formatter={(v, n) => [`${v.toLocaleString()} (${((v / total) * 100).toFixed(1)}%)`, n]} />
             </PieChart>
           </ResponsiveContainer>
-          <div className="legend" style={{ justifyContent: "center", marginTop: 6 }}>
-            {SEVERITY_ORDER.map((s) => (
-              <span key={s} className="legend-item" onClick={() => toggleFilter("Accident_severity", s)} style={{ cursor: "pointer" }}>
-                <span className="legend-dot" style={{ background: sevColor(s) }} /> {s}
-              </span>
-            ))}
-          </div>
         </div>
+        <div className="legend" style={{ justifyContent: "center", marginTop: 4 }}>
+          {SEVERITY_ORDER.map((s) => (
+            <span key={s} className="legend-item" onClick={() => toggleFilter("Accident_severity", s)} style={{ cursor: "pointer" }}>
+              <span className="legend-dot" style={{ background: sevColor(s) }} /> {s}
+            </span>
+          ))}
+        </div>
+      </div>
 
-        <div className="card">
-          <div className="card-head">
-            <span className="card-title">Severity by accident area</span>
-            <span className="card-sub">top 8 · click a bar to filter</span>
-          </div>
-          <ResponsiveContainer width="100%" height={300}>
+      <div className="card" style={{ gridColumn: 2, gridRow: 3 }}>
+        <div className="card-head">
+          <span className="card-title">Severity by accident area</span>
+          <span className="card-sub">top 8 · click a bar to filter</span>
+        </div>
+        <div className="fill">
+          <ResponsiveContainer width="100%" height="100%">
             <BarChart data={areas} layout="vertical" margin={{ left: 10, right: 16 }}>
               <XAxis type="number" {...axisProps} />
               <YAxis type="category" dataKey="key" width={150} {...axisProps} tick={{ fontSize: 11, fill: "#8B98A8" }} />
               <Tooltip {...tipProps} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
               {SEVERITY_ORDER.map((s) => (
                 <Bar key={s} dataKey={s} stackId="a" fill={sevColor(s)}
                      onClick={(d) => toggleFilter("Area_accident_occured", d.key)} cursor="pointer" />
@@ -95,72 +97,125 @@ export default function Overview() {
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: 16 }}>
+      <div className="card" style={{ gridColumn: 2, gridRow: 4 }}>
         <div className="card-head">
           <span className="card-title">Severity composition across the day</span>
-          <span className="card-sub">click a segment to filter by time-of-day</span>
+          <span className="card-sub">click a segment to filter</span>
         </div>
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={tod} margin={{ left: 0, right: 10 }}>
-            <XAxis dataKey="key" {...axisProps} />
-            <YAxis {...axisProps} />
-            <Tooltip {...tipProps} />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
-            {SEVERITY_ORDER.map((s) => (
-              <Bar key={s} dataKey={s} stackId="a" fill={sevColor(s)}
-                   onClick={(d) => toggleFilter("Time_of_day", d.key)} cursor="pointer" />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="fill">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={tod} margin={{ left: 0, right: 10 }}>
+              <XAxis dataKey="key" {...axisProps} />
+              <YAxis {...axisProps} />
+              <Tooltip {...tipProps} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              {SEVERITY_ORDER.map((s) => (
+                <Bar key={s} dataKey={s} stackId="a" fill={sevColor(s)}
+                     onClick={(d) => toggleFilter("Time_of_day", d.key)} cursor="pointer" />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
-      <IndiaMini />
-    </>
+      <IndiaMini style={{ gridColumn: 1, gridRow: "2 / 5" }} />
+    </div>
   );
 }
 
-// Compact India summary (MoRTH 2022) — a small strip on the Overview. The full
-// interactive choropleth lives in the dedicated India view.
-function IndiaMini() {
+// Compact India choropleth (MoRTH 2022) — a small map up top on the Overview.
+// Hover for a tooltip, click a state to focus the side stats. The full-size
+// interactive map lives in the dedicated India view.
+function IndiaMini({ style }) {
+  const [geo, setGeo] = useState(null);
   const [data, setData] = useState(null);
-  useEffect(() => {
-    fetch("data/india_accidents.json").then((r) => r.json()).then(setData).catch(() => {});
-  }, []);
-  if (!data) return null;
+  const [hover, setHover] = useState(null);
+  const [selected, setSelected] = useState(null);
 
-  const states = Object.entries(data.states).map(([name, s]) => ({ name, ...s }));
-  const accidents = states.reduce((a, s) => a + s.accidents, 0);
-  const killed = states.reduce((a, s) => a + s.killed, 0);
-  const fatalRate = accidents ? killed / accidents : 0;
-  const top = [...states].sort((a, b) => b.accidents - a.accidents).slice(0, 5);
-  const max = top[0]?.accidents || 1;
+  useEffect(() => {
+    Promise.all([
+      fetch("data/india_states.geojson").then((r) => r.json()),
+      fetch("data/india_accidents.json").then((r) => r.json()),
+    ]).then(([g, d]) => { setGeo(g); setData(d); }).catch(() => {});
+  }, []);
+
+  const W = 300, H = 330;
+  const path = useMemo(() => (geo ? geoPath(geoMercator().fitSize([W, H], geo)) : null), [geo]);
+
+  if (!geo || !data || !path) return null;
+
+  const states = data.states;
+  const arr = Object.entries(states).map(([name, s]) => ({ name, ...s }));
+  const max = Math.max(1, ...arr.map((s) => s.accidents));
   const color = cividis(max);
+  const natAcc = arr.reduce((a, s) => a + s.accidents, 0);
+  const natKil = arr.reduce((a, s) => a + s.killed, 0);
+  const top = [...arr].sort((a, b) => b.accidents - a.accidents).slice(0, 5);
+
+  const f = selected && states[selected] ? { name: selected, ...states[selected] } : null;
+  const head = f
+    ? { title: f.name, accidents: f.accidents, killed: f.killed, fatalRate: f.accidents ? f.killed / f.accidents : 0 }
+    : { title: "All India", accidents: natAcc, killed: natKil, fatalRate: natAcc ? natKil / natAcc : 0 };
 
   return (
-    <div className="card" style={{ marginTop: 16 }}>
+    <div className="card" style={style}>
       <div className="card-head">
-        <span className="card-title">India · state-wise road accidents</span>
-        <span className="card-sub">{data.source} · open the India view for the full map</span>
+        <span className="card-title">India · accidents by state</span>
+        <span className="card-sub">{data.source} · full map in the India view</span>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(220px, 0.8fr) 1.6fr", gap: 18, alignItems: "center" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-          <MiniStat label="Accidents" value={accidents.toLocaleString()} />
-          <MiniStat label="Killed" value={killed.toLocaleString()} />
-          <MiniStat label="Fatal / crash" value={`${(fatalRate * 100).toFixed(0)}%`} />
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <div style={{ fontSize: 10.5, color: "#5A6675", textTransform: "uppercase", letterSpacing: "0.05em" }}>Top 5 states by accidents</div>
-          {top.map((s) => (
-            <div key={s.name} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12 }}>
-              <span style={{ width: 110, color: "#8B98A8" }}>{s.name}</span>
-              <div style={{ flex: 1, background: "#0F151D", borderRadius: 5, overflow: "hidden", height: 14 }}>
-                <div style={{ width: `${(s.accidents / max) * 100}%`, height: "100%", background: color(s.accidents) }} />
-              </div>
-              <span style={{ width: 56, textAlign: "right", fontFamily: "JetBrains Mono", color: "#E6EDF3" }}>
-                {(s.accidents / 1000).toFixed(1)}k
-              </span>
+      <div className="fill" style={{ display: "grid", gridTemplateColumns: "1fr 210px", gap: 14 }}>
+        <div style={{ position: "relative", minHeight: 0 }}>
+          <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+            {geo.features.map((feat) => {
+              const name = feat.properties.st_nm;
+              const s = states[name];
+              const isSel = selected === name;
+              const dim = selected && !isSel;
+              return (
+                <path key={name} d={path(feat)}
+                      fill={s ? color(s.accidents) : "#1A222C"}
+                      stroke={isSel ? "#E69F00" : "#0A0E14"} strokeWidth={isSel ? 1.6 : 0.4}
+                      opacity={dim ? 0.45 : (hover && hover !== name ? 0.8 : 1)}
+                      style={{ cursor: "pointer" }}
+                      onClick={() => setSelected((c) => (c === name ? null : name))}
+                      onMouseEnter={() => setHover(name)} onMouseLeave={() => setHover(null)} />
+              );
+            })}
+          </svg>
+          {hover && states[hover] && (
+            <div style={{ position: "absolute", top: 6, left: 6, background: "#0A0E14", border: "1px solid #2C3A4A",
+                          borderRadius: 7, padding: "7px 10px", fontSize: 11.5, pointerEvents: "none", maxWidth: 200 }}>
+              <div style={{ fontWeight: 600 }}>{hover}</div>
+              <div style={{ color: "#8B98A8" }}>{states[hover].accidents.toLocaleString()} accidents · {states[hover].killed.toLocaleString()} killed</div>
             </div>
-          ))}
+          )}
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, minHeight: 0, overflow: "hidden" }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>{head.title}</span>
+            {selected && <span style={{ fontSize: 11, color: "#E69F00", cursor: "pointer" }} onClick={() => setSelected(null)}>✕ clear</span>}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+            <MiniStat label="Accidents" value={head.accidents.toLocaleString()} />
+            <MiniStat label="Killed" value={head.killed.toLocaleString()} />
+            <MiniStat label="Fatal / crash" value={`${(head.fatalRate * 100).toFixed(0)}%`} />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            <div style={{ fontSize: 10.5, color: "#5A6675", textTransform: "uppercase", letterSpacing: "0.05em" }}>Top 5 states · click the map to focus</div>
+            {top.map((s) => (
+              <div key={s.name} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12, cursor: "pointer" }}
+                   onClick={() => setSelected((c) => (c === s.name ? null : s.name))}>
+                <span style={{ width: 104, color: selected === s.name ? "#E6EDF3" : "#8B98A8" }}>{s.name}</span>
+                <div style={{ flex: 1, background: "#0F151D", borderRadius: 5, overflow: "hidden", height: 13 }}>
+                  <div style={{ width: `${(s.accidents / max) * 100}%`, height: "100%", background: color(s.accidents) }} />
+                </div>
+                <span style={{ width: 52, textAlign: "right", fontFamily: "JetBrains Mono", color: "#E6EDF3" }}>
+                  {(s.accidents / 1000).toFixed(1)}k
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
