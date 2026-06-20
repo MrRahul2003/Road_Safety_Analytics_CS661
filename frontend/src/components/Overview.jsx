@@ -1,7 +1,7 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useStore, severityBreakdown, groupSeverity } from "../data/store.jsx";
-import { SEVERITY_ORDER } from "../theme.js";
+import { SEVERITY_ORDER, cividis } from "../theme.js";
 
 function Kpi({ label, value, unit, foot }) {
   return (
@@ -113,7 +113,66 @@ export default function Overview() {
           </BarChart>
         </ResponsiveContainer>
       </div>
+
+      <IndiaMini />
     </>
+  );
+}
+
+// Compact India summary (MoRTH 2022) — a small strip on the Overview. The full
+// interactive choropleth lives in the dedicated India view.
+function IndiaMini() {
+  const [data, setData] = useState(null);
+  useEffect(() => {
+    fetch("data/india_accidents.json").then((r) => r.json()).then(setData).catch(() => {});
+  }, []);
+  if (!data) return null;
+
+  const states = Object.entries(data.states).map(([name, s]) => ({ name, ...s }));
+  const accidents = states.reduce((a, s) => a + s.accidents, 0);
+  const killed = states.reduce((a, s) => a + s.killed, 0);
+  const fatalRate = accidents ? killed / accidents : 0;
+  const top = [...states].sort((a, b) => b.accidents - a.accidents).slice(0, 5);
+  const max = top[0]?.accidents || 1;
+  const color = cividis(max);
+
+  return (
+    <div className="card" style={{ marginTop: 16 }}>
+      <div className="card-head">
+        <span className="card-title">India · state-wise road accidents</span>
+        <span className="card-sub">{data.source} · open the India view for the full map</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(220px, 0.8fr) 1.6fr", gap: 18, alignItems: "center" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+          <MiniStat label="Accidents" value={accidents.toLocaleString()} />
+          <MiniStat label="Killed" value={killed.toLocaleString()} />
+          <MiniStat label="Fatal / crash" value={`${(fatalRate * 100).toFixed(0)}%`} />
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ fontSize: 10.5, color: "#5A6675", textTransform: "uppercase", letterSpacing: "0.05em" }}>Top 5 states by accidents</div>
+          {top.map((s) => (
+            <div key={s.name} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12 }}>
+              <span style={{ width: 110, color: "#8B98A8" }}>{s.name}</span>
+              <div style={{ flex: 1, background: "#0F151D", borderRadius: 5, overflow: "hidden", height: 14 }}>
+                <div style={{ width: `${(s.accidents / max) * 100}%`, height: "100%", background: color(s.accidents) }} />
+              </div>
+              <span style={{ width: 56, textAlign: "right", fontFamily: "JetBrains Mono", color: "#E6EDF3" }}>
+                {(s.accidents / 1000).toFixed(1)}k
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MiniStat({ label, value }) {
+  return (
+    <div style={{ background: "#0F151D", borderRadius: 8, padding: "9px 10px", border: "1px solid #1F2935" }}>
+      <div style={{ fontSize: 9.5, color: "#8B98A8", textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</div>
+      <div style={{ fontFamily: "JetBrains Mono", fontSize: 16, fontWeight: 700, marginTop: 2 }}>{value}</div>
+    </div>
   );
 }
 
